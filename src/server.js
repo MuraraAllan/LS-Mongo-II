@@ -54,16 +54,39 @@ server.get('/top-answer/:soID', (req, res) => {
       sendUserError(err, res);
       return;
     }
-    Post.find({ parentID: soID })
+    Post.find({ parentID: soID, soID: { $ne: post.acceptedAnswerID } })
     .sort({ score: -1 })
     .exec((error, answer) => {
       if (!answer) {
         sendUserError(error, res);
         return;
       }
-      console.log(answer);
       res.status(STATUS_OK);
       res.json(answer[0]);
+    });
+  });
+});
+
+server.get('/popular-jquery-questions', (req, res) => {
+  res.status(STATUS_OK);
+  Post.find({ $and: [{ parentID: null }, { tags: { $all: ['jquery'] } }, { $or: [{ 'user.reputation': { $gt: 200000 } }, { score: { $gt: 5000 } }] }] })
+  .exec((err, post) => {
+    res.status(STATUS_OK);
+    res.json(post);
+  });
+});
+
+server.get('/npm-answers', (req, res) => {
+  Post.find({ tags: { $all: ['npm'] } })
+  .exec((err, post) => {
+    if (!post) {
+      res.status(STATUS_USER_ERROR);
+      res.json(err);
+      return;
+    }
+    Post.find({ parentID: post.map(p => p.soID) })
+    .exec((error, answer) => {
+      res.json(answer);
     });
   });
 });
