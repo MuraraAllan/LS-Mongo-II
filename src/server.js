@@ -29,7 +29,7 @@ server.get('/accepted-answer/:soID', (req, res) => {
       res.json({ error: 'No accepted answer found with that ID' });
       return;
     }
-    Post.find({ soID: post.acceptedAnswerID })
+    Post.findOne({ soID: post.acceptedAnswerID })
     .exec((error, answer) => {
       if (!answer) {
         res.status(STATUS_USER_ERROR);
@@ -37,7 +37,7 @@ server.get('/accepted-answer/:soID', (req, res) => {
         return;
       }
       res.status(STATUS_OK);
-      res.json(answer[0]);
+      res.json(answer);
     });
   });
 });
@@ -54,7 +54,7 @@ server.get('/top-answer/:soID', (req, res) => {
       sendUserError(err, res);
       return;
     }
-    Post.find({ parentID: soID, soID: { $ne: post.acceptedAnswerID } })
+    Post.findOne({ parentID: soID, soID: { $ne: post.acceptedAnswerID } })
     .sort({ score: -1 })
     .exec((error, answer) => {
       if (!answer) {
@@ -62,7 +62,7 @@ server.get('/top-answer/:soID', (req, res) => {
         return;
       }
       res.status(STATUS_OK);
-      res.json(answer[0]);
+      res.json(answer);
     });
   });
 });
